@@ -13,11 +13,29 @@ provider:
   runtime: nodejs14.x
   region: us-east-2
   lambdaHashingVersion: '20201221'
+  iam:
+    role:
+      name: skillup-api-connector
+      path: /
+      statements:
+        - Effect: "Allow"
+          Action:
+            - s3:PutObject
+          Resource: "arn:aws:s3:::skillup-statsmaker/*"
+        - Effect: "Deny"
+          Action:
+            - s3:DeleteObject
+          Resource: "arn:aws:s3:::skillup-statsmaker/*"
 
 functions:
-  hello:
-    handler: handler.hello
+  fortnite:
+    handler: handler.fortnite
     events:
       - http:
-          path: /
+          path: /fortnite
           method: get
+      # Invoke Lambda function every 30 minute
+      - schedule: cron(0/30 * * * ? *)
+    environment:
+      AWS_BUCKET: "skillup-statsmaker"
+    provisionedConcurrency: 1

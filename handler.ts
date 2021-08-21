@@ -1,5 +1,10 @@
-import * as _ from 'lodash'
+import fortnite from "./src/fortnite"
 
+export {
+  fortnite
+};
+
+/*
 // modern module syntax
 export async function hello(event: any, context: any, callback: any) {
 
@@ -19,3 +24,4 @@ export async function hello(event: any, context: any, callback: any) {
 
   callback(null, response);
 }
+*/

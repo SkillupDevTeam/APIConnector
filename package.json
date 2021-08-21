@@ -1,9 +1,13 @@
 {
   "dependencies": {
-    "lodash": "^4.17.21"
+    "@types/bmp-js": "^0.1.0",
+    "@types/sharp": "^0.28.5",
+    "aws-sdk": "^2.967.0",
+    "axios": "^0.21.1",
+    "bmp-js": "^0.1.0",
+    "sharp": "^0.28.3"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.172",
     "@types/node": "^16.6.0",
     "serverless": "^2.54.0",
     "serverless-offline": "^8.0.0",
