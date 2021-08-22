@@ -1,6 +1,7 @@
 import axios from "axios";
 import { fetchFortniteAPi, IFetchFortniteApiParams } from "../api";
 import { INTERNAL_API_KEY, INTERNAL_API_URL } from '../../config';
+import { deepEquals } from "../../utils/Objects";
 
 export interface IFortniteWeapons {
   id?: number;
@@ -20,7 +21,6 @@ export interface IFortniteWeapons {
   mainStats_spread: number;
   mainStats_spreadDownsights: number;
   mainStats_damageZoneCritical: number;
-  mainStats_healthRestoration: number;
 }
 
 interface IWeaponsListResponseDataMainStats {
@@ -99,15 +99,14 @@ async function getWeaponsList(): Promise<IWeaponsListResponseData[]> {
       gameplayTags,
       image_icon: icon,
       image_background: background,
-      mainStats_dmgPB: DmgPB,
-      mainStats_firingRate: FiringRate,
-      mainStats_clipSize: ClipSize,
-      mainStats_reloadTime: ReloadTime,
-      mainStats_bulletsPerCartridge: BulletsPerCartridge,
-      mainStats_spread: Spread,
-      mainStats_spreadDownsights: SpreadDownsights,
-      mainStats_damageZoneCritical: DamageZone_Critical,
-      mainStats_healthRestoration: gameplayTags.includes("Trait.Restoration.Health") ? DmgPB : 0
+      mainStats_dmgPB: parseFloat(DmgPB.toFixed(2)),
+      mainStats_firingRate: parseFloat(FiringRate.toFixed(2)),
+      mainStats_clipSize: parseFloat(ClipSize.toFixed(2)),
+      mainStats_reloadTime: parseFloat(ReloadTime.toFixed(2)),
+      mainStats_bulletsPerCartridge: parseFloat(BulletsPerCartridge.toFixed(2)),
+      mainStats_spread: parseFloat(Spread.toFixed(2)),
+      mainStats_spreadDownsights: parseFloat(SpreadDownsights.toFixed(2)),
+      mainStats_damageZoneCritical: parseFloat(DamageZone_Critical.toFixed(2))
     }
   });
 
@@ -125,7 +124,8 @@ async function getWeaponsList(): Promise<IWeaponsListResponseData[]> {
           "mainStats_bulletsPerCartridge", "mainStats_spread", "mainStats_spreadDownsights",
           "mainStats_damageZoneCritical"
         ]) {
-          if(baseWeapon[key] !== lastestWeapon[key]) {
+          if(!deepEquals(baseWeapon[key], lastestWeapon[key])) {
+            console.log(`Update: ${baseWeapon.fortniteId} [${key}]: '${baseWeapon[key]}' => '${lastestWeapon[key]}'`);
             lastestWeapon.id = baseWeapon.id;
             updatedWeapons.push(lastestWeapon);
             break;

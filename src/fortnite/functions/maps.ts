@@ -2,6 +2,14 @@ import { fetchFortniteAPi, IFetchFortniteApiParams } from "../api";
 import { INTERNAL_API_KEY, INTERNAL_API_URL } from '../../config';
 import axios from "axios";
 
+export interface IFortnitePOI {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  overview: string | null;
+}
+
 export interface IFortniteMaps {
   id?: number;
   patchVersion: string;
@@ -16,14 +24,34 @@ export interface IMapsListResponseData {
   urlPOI: string|null;
 }
 
+export interface IPOIListResponseData {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  images: Array<{ type: string; url: string; }>
+}
+
 export interface IMapsListResponse {
   lang: string;
   maps: IMapsListResponseData[];
 }
 
+export interface IPOIListResponse {
+  result: boolean;
+  scale: number;
+  type: string;
+  lang: string;
+  gameVersion: string;
+  list: IPOIListResponseData[];
+}
+
 export interface IMapsToUpdate {
-  update: IFortniteMaps[];
   create: IFortniteMaps[];
+}
+
+export interface IPOIsToUpdate {
+  create: IFortnitePOI[];
 }
 
 export async function getCurrentMaps(): Promise<IFortniteMaps[]> {
@@ -50,10 +78,25 @@ export async function getMapsList(): Promise<IMapsListResponseData[]> {
 }
 
 /**
+ * Fetches F-API at poi/list
+ * @returns all data about fortnite's poi
+ */
+ export async function getPOIList(): Promise<IPOIListResponseData[]> {
+  const params: IFetchFortniteApiParams = {
+    method: "GET",
+    url: " https://fortniteapi.io/v2/game/poi?lang=en"
+  }
+  const { data, error } = await fetchFortniteAPi<IPOIListResponse>(params);
+  if (error!==undefined || data===undefined) throw Error(error);
+  if (data.list.length===0) throw Error("Empty array of maps");
+  return data.list;
+}
+
+/**
  * Finds the maps returned by F-API which are missing in the database
  * @returns the new maps to add database and the total count of maps
  */
-export async function getMapsToUpdate(fApiMaps: IMapsListResponseData[]): Promise<IMapsToUpdate> {
+export async function getMapsToUpdate(fApiMaps: IMapsListResponseData[]): Promise<[IMapsToUpdate, IPOIsToUpdate]> {
   const baseMaps = await getCurrentMaps();
 
   const lastestMaps: IFortniteMaps[] = fApiMaps.map(m => ({
@@ -77,9 +120,23 @@ export async function getMapsToUpdate(fApiMaps: IMapsListResponseData[]): Promis
       addedMaps.push(lastestMap);
     }
   }
+  let POIs: IFortnitePOI[] = [];
+  if(addedMaps.length > 0) {
+    const fApiPOI = await getPOIList();
+    POIs = fApiPOI.map(p => ({
+      id: p.id,
+      patchVersion: addedMaps[addedMaps.length - 1].patchVersion,
+      name: p.name,
+      x: p.x,
+      y: p.y,
+      overview: null
+    }));
+  }
   
-  return {
-    create: addedMaps,
-    update: []
-  };
+  return [{
+      create: addedMaps
+    }, {
+      create: POIs
+    }
+  ];
 }

@@ -1,13 +1,14 @@
-import { getMapsList, getMapsToUpdate, IMapsToUpdate } from './functions/maps';
+import { getMapsList, getMapsToUpdate, IMapsToUpdate, IPOIsToUpdate } from './functions/maps';
 import { getWeaponsToUpdate, IWeaponsToUpdate } from './functions/weapons';
 import { INTERNAL_API_KEY, INTERNAL_API_URL } from '../config';
 import axios from 'axios';
 import { uploadImagesData } from './functions/images';
 
 export interface IDataToUpdate {
-    maps: IMapsToUpdate,
-    weapons: IWeaponsToUpdate,
-    patchVersion: string
+    maps: IMapsToUpdate;
+    POIs: IPOIsToUpdate;
+    weapons: IWeaponsToUpdate;
+    patchVersion: string;
 }
 
 async function getCurrentPatch(): Promise<string|null> {
@@ -37,10 +38,11 @@ async function update(): Promise<string> {
 
     console.log("Initiated the data update");
     const weaponsToUpdate = await getWeaponsToUpdate();
-    const mapsToUpdate = await getMapsToUpdate(maps);
+    const [ mapsToUpdate, poisToUpdate ] = await getMapsToUpdate(maps);
 
     const dataToUpdate: IDataToUpdate = {
         maps: mapsToUpdate,
+        POIs: poisToUpdate,
         weapons: weaponsToUpdate,
         patchVersion: lastestPatch
     }
