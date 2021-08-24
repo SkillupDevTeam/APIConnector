@@ -7,24 +7,22 @@ export interface IFetchFortniteApiParams {
   url: string;
   body?: any;
 }
-export async function fetchFortniteAPi<T>(params: IFetchFortniteApiParams): Promise<{data?: T, error?: string}> {
-  const { method, url, body } = params;
-  const options: AxiosRequestConfig = {
-    method: method,
-    url: url,
-    headers: {
-      "AUthorization": FORTNITE_API_KEY,
-      "Content-type": "Application/json"
-    },
-    data: body
-  }
-  
+export async function fetchFortniteAPi<T>(params: IFetchFortniteApiParams): Promise<T> {
   try {
-    const request = await axios(options);
-    if (request.data.result!==true) return { error: `FortniteApi.io returned no data for fetching url ${url}`};
-    return { data: request.data }
+    const { method, url, body } = params;
+    const options: AxiosRequestConfig = {
+      method: method,
+      url: url,
+      headers: {
+        "AUthorization": FORTNITE_API_KEY,
+        "Content-type": "Application/json"
+      },
+      data: body
+    }
+    const res = await axios(options);
+    return res.data;
   } catch(err) {
-    return { error: `${err}` };
+    throw err;
   }
 }
 

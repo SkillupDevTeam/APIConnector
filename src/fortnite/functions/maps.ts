@@ -68,17 +68,22 @@ export async function getCurrentMaps(): Promise<IFortniteMaps[]> {
  * @returns all data about fortnite's maps
  */
 export async function getMapsList(): Promise<IMapsListResponseData[]> {
-  const params: IFetchFortniteApiParams = {
-    method: "GET",
-    url: "https://fortniteapi.io/v1/maps/list"
+  try {
+    const params: IFetchFortniteApiParams = {
+      method: "GET",
+      url: "https://fortniteapi.io/v1/maps/list"
+    }
+    const data = await fetchFortniteAPi<IMapsListResponse>(params);
+    if (data.maps.length === 0) {
+      throw new Error("Empty array of maps");
+    }
+    for(const map of data.maps) {
+      map.patchVersion = `${map.patchVersion}-${map.releaseDate}`;
+    }
+    return data.maps;
+  } catch(err) {
+    throw err;
   }
-  const { data, error } = await fetchFortniteAPi<IMapsListResponse>(params);
-  if (error!==undefined || data===undefined) throw Error(error);
-  if (data.maps.length===0) throw Error("Empty array of maps");
-  for(const map of data.maps) {
-    map.patchVersion = `${map.patchVersion}-${map.releaseDate}`;
-  }
-  return data.maps;
 }
 
 /**
@@ -86,14 +91,19 @@ export async function getMapsList(): Promise<IMapsListResponseData[]> {
  * @returns all data about fortnite's poi
  */
  export async function getPOIList(): Promise<IPOIListResponseData[]> {
-  const params: IFetchFortniteApiParams = {
-    method: "GET",
-    url: " https://fortniteapi.io/v2/game/poi?lang=en"
+  try {
+    const params: IFetchFortniteApiParams = {
+      method: "GET",
+      url: " https://fortniteapi.io/v2/game/poi?lang=en"
+    }
+    const data = await fetchFortniteAPi<IPOIListResponse>(params);
+    if (data.list.length === 0) {
+      throw new Error("Empty array of maps");
+    }
+    return data.list;
+  } catch(err) {
+    throw err;
   }
-  const { data, error } = await fetchFortniteAPi<IPOIListResponse>(params);
-  if (error!==undefined || data===undefined) throw Error(error);
-  if (data.list.length===0) throw Error("Empty array of maps");
-  return data.list;
 }
 
 /**

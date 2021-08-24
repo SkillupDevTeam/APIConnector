@@ -72,14 +72,19 @@ export async function getCurrentWeapons(): Promise<IFortniteWeapons[]> {
  * @returns all data about fortnite's weapons
  */
 async function getWeaponsList(): Promise<IWeaponsListResponseData[]> {
-  const params: IFetchFortniteApiParams = {
-    method: "GET",
-    url: "https://fortniteapi.io/v1/loot/list?lang=en"
+  try {
+    const params: IFetchFortniteApiParams = {
+      method: "GET",
+      url: "https://fortniteapi.io/v1/loot/list?lang=en"
+    }
+    const data = await fetchFortniteAPi<IWeaponsListResponse>(params);
+    if (data.weapons.length===0) {
+      throw new Error("Empty array of maps");
+    }
+    return data.weapons;
+  } catch(err) {
+    throw err;
   }
-  const { data, error } = await fetchFortniteAPi<IWeaponsListResponse>(params);
-  if (error!==undefined || data===undefined) throw Error(error);
-  if (data.weapons.length===0) throw Error("Empty array of maps");
-  return data.weapons;
 }
 
 /**
