@@ -4,5 +4,3 @@ package-lock.json
 yarn-error.log
 .serverless
 .build
-.env
-.env.*
