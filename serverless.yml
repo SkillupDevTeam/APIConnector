@@ -38,4 +38,10 @@ functions:
           method: get
       # Invoke Lambda function every 30 minute
       - schedule: cron(0/30 * * * ? *)
+    environment:
+      AWS_BUCKET: ${env:AWS_BUCKET}
+      AWS_BUCKET_CDN_URL: ${env:AWS_BUCKET_CDN_URL}
+      FORTNITE_API_KEY: ${env:FORTNITE_API_KEY}
+      INTERNAL_API_KEY: ${env:INTERNAL_API_KEY}
+      INTERNAL_API_URL: ${env:INTERNAL_API_URL}
     provisionedConcurrency: 1

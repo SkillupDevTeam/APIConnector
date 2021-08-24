@@ -33,12 +33,9 @@ async function updateData(dataToUpdate: IDataToUpdate) {
 }
 
 async function update(): Promise<string> {
-    console.log("update()");
     try {
-        console.log("getMapsList()");
         const maps = await getMapsList();
         const lastestPatch = maps[maps.length-1].patchVersion;
-        console.log("getCurrentPatch()");
         const currentPatch = await getCurrentPatch();
         if(currentPatch === lastestPatch) {
             console.log("Up to date !");
