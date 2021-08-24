@@ -33,9 +33,12 @@ async function updateData(dataToUpdate: IDataToUpdate) {
 }
 
 async function update(): Promise<string> {
+    console.log("update()");
     try {
+        console.log("getMapsList()");
         const maps = await getMapsList();
         const lastestPatch = maps[maps.length-1].patchVersion;
+        console.log("getCurrentPatch()");
         const currentPatch = await getCurrentPatch();
         if(currentPatch === lastestPatch) {
             console.log("Up to date !");
@@ -78,6 +81,7 @@ export default async function handle(event: any, context: any, callback: any) {
             })
         });
     } catch(err) {
+        console.error(err);
         callback(null, {
             statusCode: 500,
             body: JSON.stringify(err)
