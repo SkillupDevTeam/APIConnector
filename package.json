@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev": "serverless offline start --httpPort 8080"
+  },
   "dependencies": {
     "@types/bmp-js": "^0.1.0",
     "@types/sharp": "^0.28.5",
