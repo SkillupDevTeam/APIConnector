@@ -17,7 +17,7 @@ interface ISize {
 async function uploadImage(key: string, url: string, sizes: ISize[], jpeg: boolean): Promise<void> {
     let retries = 3;
     while(retries > 0) {
-      try {/*
+      try {
         let cancelTimeout: NodeJS.Timeout | undefined;
         const res = await axios.get(url, {
             responseType: 'arraybuffer',
@@ -43,7 +43,7 @@ async function uploadImage(key: string, url: string, sizes: ISize[], jpeg: boole
                 resImage, 
                 jpeg ? "image/jpeg" : "image/png"
             );
-        }*/
+        }
         return;
       } catch(err) {
         retries -= 1;
