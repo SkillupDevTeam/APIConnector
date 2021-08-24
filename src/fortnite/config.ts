@@ -1,6 +1,6 @@
-export const FORTNITE_API_KEY: string = process.env.FORTNITE_API_KEY || "26551bc3-dd6c8832-a8c5654e-4d9eb05f";
-export const AWS_BUCKET: string = process.env.AWS_BUCKET || "";
-export const AWS_BUCKET_CDN_URL = "https://cdn.fortniteskillup.gg";
+export const FORTNITE_API_KEY: string = process.env.FORTNITE_API_KEY!;
+export const AWS_BUCKET: string = process.env.AWS_BUCKET !;
+export const AWS_BUCKET_CDN_URL = process.env.AWS_BUCKET_CDN_URL!;
 
 export const DATA_AES_KEY = new Uint8Array([
     0xF6, 0x23, 0x75, 0x6E, 0x47, 0x5B, 0x97, 0x3C,

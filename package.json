@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "dev": "serverless offline start --httpPort 8080"
+    "dev": "serverless offline start --httpPort 8080",
+    "deploy:prod": "serverless deploy --stage production",
+    "deploy:staging": "serverless deploy --stage staging"
   },
   "dependencies": {
     "@types/bmp-js": "^0.1.0",

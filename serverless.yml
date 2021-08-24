@@ -4,6 +4,8 @@ service: api-connector
 
 frameworkVersion: '2'
 
+useDotenv: true
+
 plugins:
   - serverless-plugin-typescript
   - serverless-offline
@@ -15,17 +17,17 @@ provider:
   lambdaHashingVersion: '20201221'
   iam:
     role:
-      name: skillup-api-connector
+      name: ${env:AWS_IAM_NAME}
       path: /
       statements:
         - Effect: "Allow"
           Action:
             - s3:PutObject
-          Resource: "arn:aws:s3:::skillup-statsmaker/*"
+          Resource: "arn:aws:s3:::${env:AWS_BUCKET}/*"
         - Effect: "Deny"
           Action:
             - s3:DeleteObject
-          Resource: "arn:aws:s3:::skillup-statsmaker/*"
+          Resource: "arn:aws:s3:::${env:AWS_BUCKET}/*"
 
 functions:
   fortnite:
@@ -36,6 +38,4 @@ functions:
           method: get
       # Invoke Lambda function every 30 minute
       - schedule: cron(0/30 * * * ? *)
-    environment:
-      AWS_BUCKET: "skillup-statsmaker"
     provisionedConcurrency: 1
