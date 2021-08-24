@@ -55,8 +55,12 @@ export interface IPOIsToUpdate {
 }
 
 export async function getCurrentMaps(): Promise<IFortniteMaps[]> {
-  const res = await axios.get(`${INTERNAL_API_URL}/fortnite/maps`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } });
-  return res.data;
+  try {
+    const res = await axios.get(`${INTERNAL_API_URL}/fortnite/maps`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } });
+    return res.data;
+  } catch(err) {
+    throw err;
+  }
 }
 
 /**
@@ -97,46 +101,50 @@ export async function getMapsList(): Promise<IMapsListResponseData[]> {
  * @returns the new maps to add database and the total count of maps
  */
 export async function getMapsToUpdate(fApiMaps: IMapsListResponseData[]): Promise<[IMapsToUpdate, IPOIsToUpdate]> {
-  const baseMaps = await getCurrentMaps();
+  try {
+    const baseMaps = await getCurrentMaps();
 
-  const lastestMaps: IFortniteMaps[] = fApiMaps.map(m => ({
-    patchVersion: m.patchVersion,
-    url: m.url,
-    urlPOI: m.urlPOI
-  }));
+    const lastestMaps: IFortniteMaps[] = fApiMaps.map(m => ({
+      patchVersion: m.patchVersion,
+      url: m.url,
+      urlPOI: m.urlPOI
+    }));
 
-  const addedMaps = new Array<IFortniteMaps>();
+    const addedMaps = new Array<IFortniteMaps>();
 
-  // find missing maps from F-API in database
-  for (const lastestMap of lastestMaps) {
-    var alreadyAdded = false;
-    for (const baseMap of baseMaps) {
-      if (baseMap.patchVersion === lastestMap.patchVersion) {
-        alreadyAdded = true;
-        break;
+    // find missing maps from F-API in database
+    for (const lastestMap of lastestMaps) {
+      var alreadyAdded = false;
+      for (const baseMap of baseMaps) {
+        if (baseMap.patchVersion === lastestMap.patchVersion) {
+          alreadyAdded = true;
+          break;
+        }
+      }
+      if (!alreadyAdded) {
+        addedMaps.push(lastestMap);
       }
     }
-    if (!alreadyAdded) {
-      addedMaps.push(lastestMap);
+    let POIs: IFortnitePOI[] = [];
+    if(addedMaps.length > 0) {
+      const fApiPOI = await getPOIList();
+      POIs = fApiPOI.map(p => ({
+        id: p.id,
+        patchVersion: addedMaps[addedMaps.length - 1].patchVersion,
+        name: p.name,
+        x: p.x,
+        y: p.y,
+        overview: null
+      }));
     }
+    
+    return [{
+        create: addedMaps
+      }, {
+        create: POIs
+      }
+    ];
+  } catch(err) {
+    throw err;
   }
-  let POIs: IFortnitePOI[] = [];
-  if(addedMaps.length > 0) {
-    const fApiPOI = await getPOIList();
-    POIs = fApiPOI.map(p => ({
-      id: p.id,
-      patchVersion: addedMaps[addedMaps.length - 1].patchVersion,
-      name: p.name,
-      x: p.x,
-      y: p.y,
-      overview: null
-    }));
-  }
-  
-  return [{
-      create: addedMaps
-    }, {
-      create: POIs
-    }
-  ];
 }

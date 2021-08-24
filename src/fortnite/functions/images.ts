@@ -47,10 +47,10 @@ async function uploadImage(key: string, url: string, sizes: ISize[], jpeg: boole
         return;
       } catch(err) {
         retries -= 1;
-        console.log(err);
+        console.error(err);
       }
     }
-    console.log(`Upload failed: ${url} => ${key}`);
+    console.error(`Upload failed: ${url} => ${key}`);
 }
 
 export async function uploadImagesData(data: IDataToUpdate) {

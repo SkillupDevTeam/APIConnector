@@ -59,8 +59,12 @@ export interface IWeaponsToUpdate {
 }
 
 export async function getCurrentWeapons(): Promise<IFortniteWeapons[]> {
-  const res = await axios.get(`${INTERNAL_API_URL}/fortnite/weapons`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } });
-  return res.data;
+  try {
+    const res = await axios.get(`${INTERNAL_API_URL}/fortnite/weapons`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } });
+    return res.data;
+  } catch(err) {
+    throw err;
+  }
 }
 
 /**
@@ -83,66 +87,70 @@ async function getWeaponsList(): Promise<IWeaponsListResponseData[]> {
  * @returns the new weapons to add database and the total count of weapons
  */
  export async function getWeaponsToUpdate(): Promise<IWeaponsToUpdate> {
-  const fApiWeapons = await getWeaponsList();
-  const baseWeapons = await getCurrentWeapons();
+  try {
+    const fApiWeapons = await getWeaponsList();
+    const baseWeapons = await getCurrentWeapons();
 
-  const lastestWeapons: IFortniteWeapons[] = fApiWeapons.map(elt => {
-    const { enabled, name, rarity, type, gameplayTags, images, mainStats } = elt;
-    const { icon, background } = images;
-    const { DmgPB, FiringRate, ClipSize, ReloadTime, BulletsPerCartridge, Spread, SpreadDownsights, DamageZone_Critical } = mainStats
-    return { 
-      fortniteId: elt.id,
-      enabled,
-      name,
-      rarity,
-      type,
-      gameplayTags,
-      image_icon: icon,
-      image_background: background,
-      mainStats_dmgPB: parseFloat(DmgPB.toFixed(2)),
-      mainStats_firingRate: parseFloat(FiringRate.toFixed(2)),
-      mainStats_clipSize: parseFloat(ClipSize.toFixed(2)),
-      mainStats_reloadTime: parseFloat(ReloadTime.toFixed(2)),
-      mainStats_bulletsPerCartridge: parseFloat(BulletsPerCartridge.toFixed(2)),
-      mainStats_spread: parseFloat(Spread.toFixed(2)),
-      mainStats_spreadDownsights: parseFloat(SpreadDownsights.toFixed(2)),
-      mainStats_damageZoneCritical: parseFloat(DamageZone_Critical.toFixed(2))
-    }
-  });
+    const lastestWeapons: IFortniteWeapons[] = fApiWeapons.map(elt => {
+      const { enabled, name, rarity, type, gameplayTags, images, mainStats } = elt;
+      const { icon, background } = images;
+      const { DmgPB, FiringRate, ClipSize, ReloadTime, BulletsPerCartridge, Spread, SpreadDownsights, DamageZone_Critical } = mainStats
+      return { 
+        fortniteId: elt.id,
+        enabled,
+        name,
+        rarity,
+        type,
+        gameplayTags,
+        image_icon: icon,
+        image_background: background,
+        mainStats_dmgPB: parseFloat(DmgPB.toFixed(2)),
+        mainStats_firingRate: parseFloat(FiringRate.toFixed(2)),
+        mainStats_clipSize: parseFloat(ClipSize.toFixed(2)),
+        mainStats_reloadTime: parseFloat(ReloadTime.toFixed(2)),
+        mainStats_bulletsPerCartridge: parseFloat(BulletsPerCartridge.toFixed(2)),
+        mainStats_spread: parseFloat(Spread.toFixed(2)),
+        mainStats_spreadDownsights: parseFloat(SpreadDownsights.toFixed(2)),
+        mainStats_damageZoneCritical: parseFloat(DamageZone_Critical.toFixed(2))
+      }
+    });
 
-  const addedWeapons: IFortniteWeapons[] = [];
-  const updatedWeapons: IFortniteWeapons[] = [];
+    const addedWeapons: IFortniteWeapons[] = [];
+    const updatedWeapons: IFortniteWeapons[] = [];
 
-  // find missing weapons from F-API in database
-  for (const lastestWeapon of lastestWeapons) {
-    var alreadyAdded = false;
-    for (const baseWeapon of baseWeapons) {
-      if (baseWeapon.fortniteId === lastestWeapon.fortniteId) {
-        for(const key of [
-          "enabled", "name", "rarity", "type", "gameplayTags", "mainStats_dmgPB", 
-          "mainStats_firingRate", "mainStats_clipSize", "mainStats_reloadTime", 
-          "mainStats_bulletsPerCartridge", "mainStats_spread", "mainStats_spreadDownsights",
-          "mainStats_damageZoneCritical"
-        ]) {
-          if(!deepEquals(baseWeapon[key], lastestWeapon[key])) {
-            console.log(`Update: ${baseWeapon.fortniteId} [${key}]: '${baseWeapon[key]}' => '${lastestWeapon[key]}'`);
-            lastestWeapon.id = baseWeapon.id;
-            updatedWeapons.push(lastestWeapon);
-            break;
+    // find missing weapons from F-API in database
+    for (const lastestWeapon of lastestWeapons) {
+      var alreadyAdded = false;
+      for (const baseWeapon of baseWeapons) {
+        if (baseWeapon.fortniteId === lastestWeapon.fortniteId) {
+          for(const key of [
+            "enabled", "name", "rarity", "type", "gameplayTags", "mainStats_dmgPB", 
+            "mainStats_firingRate", "mainStats_clipSize", "mainStats_reloadTime", 
+            "mainStats_bulletsPerCartridge", "mainStats_spread", "mainStats_spreadDownsights",
+            "mainStats_damageZoneCritical"
+          ]) {
+            if(!deepEquals(baseWeapon[key], lastestWeapon[key])) {
+              console.log(`Update: ${baseWeapon.fortniteId} [${key}]: '${baseWeapon[key]}' => '${lastestWeapon[key]}'`);
+              lastestWeapon.id = baseWeapon.id;
+              updatedWeapons.push(lastestWeapon);
+              break;
+            }
           }
+          alreadyAdded = true;
+          break;
         }
-        alreadyAdded = true;
-        break;
+      }
+      if (!alreadyAdded) {
+        lastestWeapon.id = baseWeapons.reduce((m, w) => Math.max(m, w.id || 0), 0) + addedWeapons.length + 1;
+        addedWeapons.push(lastestWeapon);
       }
     }
-    if (!alreadyAdded) {
-      lastestWeapon.id = baseWeapons.reduce((m, w) => Math.max(m, w.id || 0), 0) + addedWeapons.length + 1;
-      addedWeapons.push(lastestWeapon);
-    }
-  }
 
-  return {
-    create: addedWeapons,
-    update: updatedWeapons
-  };
+    return {
+      create: addedWeapons,
+      update: updatedWeapons
+    };
+  } catch(err) {
+    throw err;
+  }
 }

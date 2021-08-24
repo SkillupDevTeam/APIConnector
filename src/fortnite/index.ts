@@ -12,47 +12,59 @@ export interface IDataToUpdate {
 }
 
 async function getCurrentPatch(): Promise<string|null> {
-    const res = await axios.get(`${INTERNAL_API_URL}/fortnite/current-patch`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` }});
-    return res.data.patchVersion;
+    try {
+        const res = await axios.get(`${INTERNAL_API_URL}/fortnite/current-patch`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` }});
+        return res.data.patchVersion;
+    } catch(err) {
+        throw err;
+    }
 }
 
 async function updateData(dataToUpdate: IDataToUpdate) {
-    await axios.post(
-        `${INTERNAL_API_URL}/fortnite/update-data`,
-        dataToUpdate,
-        { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } }
-    );
+    try {
+        await axios.post(
+            `${INTERNAL_API_URL}/fortnite/update-data`,
+            dataToUpdate,
+            { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } }
+        );
+    } catch(err) {
+        throw err;
+    }
 }
 
 async function update(): Promise<string> {
-    const maps = await getMapsList();
-    const lastestPatch = maps[maps.length-1].patchVersion;
-    const currentPatch = await getCurrentPatch();
-    if(currentPatch === lastestPatch) {
-        console.log("Up to date !");
+    try {
+        const maps = await getMapsList();
+        const lastestPatch = maps[maps.length-1].patchVersion;
+        const currentPatch = await getCurrentPatch();
+        if(currentPatch === lastestPatch) {
+            console.log("Up to date !");
+            return lastestPatch;
+        }
+
+        console.log("currentPatch: ", currentPatch);
+        console.log("lastestPatch: ", lastestPatch);
+
+        console.log("Initiated the data update");
+        const weaponsToUpdate = await getWeaponsToUpdate();
+        const [ mapsToUpdate, poisToUpdate ] = await getMapsToUpdate(maps);
+
+        const dataToUpdate: IDataToUpdate = {
+            maps: mapsToUpdate,
+            POIs: poisToUpdate,
+            weapons: weaponsToUpdate,
+            patchVersion: lastestPatch
+        }
+
+        await uploadImagesData(dataToUpdate);
+        await updateData(dataToUpdate);
+
+        console.log("Finished");
+        
         return lastestPatch;
+    } catch(err) {
+        throw err;
     }
-
-    console.log("currentPatch: ", currentPatch);
-    console.log("lastestPatch: ", lastestPatch);
-
-    console.log("Initiated the data update");
-    const weaponsToUpdate = await getWeaponsToUpdate();
-    const [ mapsToUpdate, poisToUpdate ] = await getMapsToUpdate(maps);
-
-    const dataToUpdate: IDataToUpdate = {
-        maps: mapsToUpdate,
-        POIs: poisToUpdate,
-        weapons: weaponsToUpdate,
-        patchVersion: lastestPatch
-    }
-
-    await uploadImagesData(dataToUpdate);
-    await updateData(dataToUpdate);
-
-    console.log("Finished");
-    
-    return lastestPatch;
 }
 
 export default async function handle(event: any, context: any, callback: any) {
