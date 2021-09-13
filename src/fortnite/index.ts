@@ -67,21 +67,11 @@ async function update(): Promise<string> {
     }
 }
 
-export default async function handle(event: any, context: any, callback: any) {
+export default async function handle(event: any, context: any) {
     console.log("API CONNECTOR: Fortnite");
     try {
-        const patchVersion = await update();
-        callback(null, {
-            statusCode: 200,
-            body: JSON.stringify({
-                patchVersion
-            })
-        });
+        await update();
     } catch(err) {
         console.error(err);
-        callback(null, {
-            statusCode: 500,
-            body: JSON.stringify(err)
-        });
     }
 }

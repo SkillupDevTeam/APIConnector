@@ -33,11 +33,8 @@ functions:
   fortnite:
     handler: handler.fortnite
     events:
-      - http:
-          path: /fortnite
-          method: get
-      # Invoke Lambda function every 30 minute
-      - schedule: cron(0/30 * * * ? *)
+      # Invoke Lambda function every 1 hours
+      - schedule: rate(1 hours)
     environment:
       AWS_BUCKET: ${env:AWS_BUCKET}
       AWS_BUCKET_CDN_URL: ${env:AWS_BUCKET_CDN_URL}
