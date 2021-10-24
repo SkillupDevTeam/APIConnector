@@ -57,7 +57,7 @@ export interface IPOIsToUpdate {
 export async function getCurrentMaps(): Promise<IFortniteMaps[]> {
   try {
     const res = await axios.get(`${INTERNAL_API_URL}/fortnite/maps`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } });
-    return res.data;
+    return res.data.maps;
   } catch(err) {
     throw err;
   }

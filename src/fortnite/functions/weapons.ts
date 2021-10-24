@@ -61,7 +61,7 @@ export interface IWeaponsToUpdate {
 export async function getCurrentWeapons(): Promise<IFortniteWeapons[]> {
   try {
     const res = await axios.get(`${INTERNAL_API_URL}/fortnite/weapons`, { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } });
-    return res.data;
+    return res.data.weapons;
   } catch(err) {
     throw err;
   }
