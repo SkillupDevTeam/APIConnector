@@ -41,5 +41,4 @@ functions:
       FORTNITE_API_KEY: ${env:FORTNITE_API_KEY}
       INTERNAL_API_KEY: ${env:INTERNAL_API_KEY}
       INTERNAL_API_URL: ${env:INTERNAL_API_URL}
-    provisionedConcurrency: 1
     timeout: 900 # 15mn timeout (aws max)
