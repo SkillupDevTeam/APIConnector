@@ -15,7 +15,7 @@ export interface IGameModes {
   category: number | null;
   priority: number | null;
   enabled: boolean;
-  ltmMessage: string[] | null;
+  ltmMessage: string[] | undefined;
 }
 
 interface IGameModesResponseData {
@@ -98,7 +98,7 @@ async function getGameModes(): Promise<IGameModesResponseData[]> {
       category: gm.category ?? null,
       priority: gm.priority ?? null,
       enabled: gm.enabled ?? false,
-      ltmMessage: gm.ltmMessage ?? null
+      ltmMessage: gm.ltmMessage ?? undefined
     }));
 
     const addedGameModes = lastestGameModes.filter(gm => !baseGameModeIds.has(gm.id));
