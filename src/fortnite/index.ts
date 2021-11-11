@@ -3,6 +3,7 @@ import { getWeaponsToUpdate, IWeaponsToUpdate } from './functions/weapons';
 import { INTERNAL_API_KEY, INTERNAL_API_URL } from '../config';
 import axios from 'axios';
 import { uploadImagesData } from './functions/images';
+import { getGameModesToUpdate, IGameModesToUpdate } from './functions/gameModes';
 
 export interface IDataToUpdate {
     maps: IMapsToUpdate;
@@ -32,7 +33,30 @@ async function updateData(dataToUpdate: IDataToUpdate) {
     }
 }
 
+async function updateGameModes(gameModesToUpdate: IGameModesToUpdate) {
+    try {
+        await axios.post(
+            `${INTERNAL_API_URL}/fortnite/update-game-modes`,
+            gameModesToUpdate,
+            { headers: { 'Authorization': `Bearer ${INTERNAL_API_KEY}` } }
+        );
+    } catch(err) {
+        throw err;
+    }
+}
+
 async function update(): Promise<string> {
+    try {
+        const gameModesToUpdate = await getGameModesToUpdate();
+        console.log(`Game modes added: ${gameModesToUpdate.create.length}`);
+        if(gameModesToUpdate.create.length > 0) {
+            await updateGameModes(gameModesToUpdate);
+            console.log("Game modes created");
+        }
+    } catch(err) {
+        throw err;
+    }
+
     try {
         const maps = await getMapsList();
         const lastestPatch = maps[maps.length-1].patchVersion;

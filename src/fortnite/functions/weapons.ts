@@ -79,7 +79,7 @@ async function getWeaponsList(): Promise<IWeaponsListResponseData[]> {
     }
     const data = await fetchFortniteAPi<IWeaponsListResponse>(params);
     if (data.weapons.length===0) {
-      throw new Error("Empty array of maps");
+      throw new Error("Empty array of weapons");
     }
     return data.weapons;
   } catch(err) {
