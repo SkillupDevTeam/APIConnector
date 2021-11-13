@@ -45,7 +45,7 @@ async function updateGameModes(gameModesToUpdate: IGameModesToUpdate) {
     }
 }
 
-async function update(): Promise<string> {
+async function update() {
     try {
         const gameModesToUpdate = await getGameModesToUpdate();
         console.log(`Game modes added: ${gameModesToUpdate.create.length}`);
@@ -54,40 +54,58 @@ async function update(): Promise<string> {
             console.log("Game modes created");
         }
     } catch(err) {
-        throw err;
+        console.error(err);
     }
 
     try {
         const maps = await getMapsList();
         const lastestPatch = maps[maps.length-1].patchVersion;
         const currentPatch = await getCurrentPatch();
-        if(currentPatch === lastestPatch) {
-            console.log("Up to date !");
-            return lastestPatch;
-        }
-
+        
         console.log("currentPatch: ", currentPatch);
         console.log("lastestPatch: ", lastestPatch);
 
-        console.log("Initiated the data update");
-        const weaponsToUpdate = await getWeaponsToUpdate();
-        const [ mapsToUpdate, poisToUpdate ] = await getMapsToUpdate(maps);
-
         const dataToUpdate: IDataToUpdate = {
-            maps: mapsToUpdate,
-            POIs: poisToUpdate,
-            weapons: weaponsToUpdate,
+            maps: {
+                create: []
+            },
+            POIs: {
+                create: []
+            },
+            weapons: {
+                create: [],
+                update: []
+            },
             patchVersion: lastestPatch
         }
 
-        await uploadImagesData(dataToUpdate);
-        await updateData(dataToUpdate);
+        if(currentPatch === lastestPatch) {
+            console.log("Maps up to date !");
+        } else {
+            console.log("Maps updated");
+            const [ mapsToUpdate, poisToUpdate ] = await getMapsToUpdate(maps);
+            dataToUpdate.maps = mapsToUpdate;
+            dataToUpdate.POIs = poisToUpdate;
+        }
+
+        const weaponsToUpdate = await getWeaponsToUpdate();
+        console.log(`Weapons added: ${weaponsToUpdate.create.length}`);
+        console.log(`Weapons modified: ${weaponsToUpdate.update.length}`);
+        dataToUpdate.weapons = weaponsToUpdate;
+
+        if(dataToUpdate.POIs.create.length > 0 || dataToUpdate.maps.create.length > 0 || 
+            dataToUpdate.weapons.create.length > 0 || dataToUpdate.weapons.update.length > 0
+        ) {
+            console.log("Initiated the data update");
+            await uploadImagesData(dataToUpdate);
+            await updateData(dataToUpdate);
+        }
 
         console.log("Finished");
         
         return lastestPatch;
     } catch(err) {
-        throw err;
+        console.error(err);
     }
 }
 
